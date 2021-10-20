@@ -35,6 +35,12 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener,
 
         initRecyclerView()
         mBinding.svMovies.setOnQueryTextListener(this)
+        mBinding.reset.setOnClickListener {
+            initRecyclerView()
+            mBinding.svMovies.setQuery("", false);
+            mBinding.svMovies.clearFocus();
+            mBinding.svMovies.onActionViewCollapsed();
+        }
     }
 
     private fun getRetrofit(): Retrofit {
@@ -109,7 +115,7 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener,
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        if(!query.isNullOrEmpty()){
+        if (!query.isNullOrEmpty()) {
             searchMovie(query)
         }
         return true

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Movies</string>
+    <string name="ivDescription">Imagen de la pelicula</string>
+    <string name="btnReset">Reset</string>
 </resources>
