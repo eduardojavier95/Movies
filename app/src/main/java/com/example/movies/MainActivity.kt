@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener,
         setContentView(mBinding.root)
 
         initRecyclerView()
+        mBinding.svMovies.setOnQueryTextListener(this)
     }
 
     private fun getRetrofit(): Retrofit {
