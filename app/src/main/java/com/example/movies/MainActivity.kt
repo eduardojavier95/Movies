@@ -3,6 +3,7 @@ package com.example.movies
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import android.widget.Toast
@@ -37,6 +38,8 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener,
         mBinding.svMovies.setOnQueryTextListener(this)
         mBinding.reset.setOnClickListener {
             initRecyclerView()
+            mBinding.rvMovies.visibility = View.VISIBLE
+            mBinding.tvFail.visibility = View.GONE
             mBinding.svMovies.setQuery("", false);
             mBinding.svMovies.clearFocus();
             mBinding.svMovies.onActionViewCollapsed();
@@ -81,11 +84,18 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener,
             runOnUiThread {
                 if (call.isSuccessful) {
                     //show recyclerview
-                    allMovies?.clear()
-                    allMovies?.addAll(moviesRes!!.results)
-                    Log.i("response", allMovies[0].toString())
-                    mAdapter.notifyDataSetChanged()
-                    Toast.makeText(this@MainActivity, "Funciono", Toast.LENGTH_SHORT).show()
+                        if (!moviesRes!!.results.isEmpty()){
+                            allMovies?.clear()
+                            allMovies?.addAll(moviesRes.results)
+                            Log.i("response", allMovies[0].toString())
+                            mAdapter.notifyDataSetChanged()
+                            Toast.makeText(this@MainActivity, "Funciono", Toast.LENGTH_SHORT).show()
+                        }else{
+
+                            mBinding.rvMovies.visibility = View.GONE
+                            mBinding.tvFail.visibility = View.VISIBLE
+                        }
+
                 } else {
                     //show error
 //                    showError()
