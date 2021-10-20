@@ -8,11 +8,14 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.PrimaryKey
 import com.example.movies.databinding.ActivityMainBinding
 import com.example.movies.features.movies.data.models.data.ApiMovieResponse
+import com.example.movies.features.movies.data.models.data.MoviesEntity
 import com.example.movies.features.movies.data.models.data.MoviesResponse
 import com.example.movies.features.movies.data.services.APIService
 import com.example.movies.features.movies.view.adapters.MoviesAdapter
+import com.example.movies.features.movies.view.adapters.OnClickListenerMovie
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,22 +44,49 @@ class MainActivity : AppCompatActivity() {
         initRecyclerView()
     }
 
-    private fun getRetrofit(): Retrofit{
+    private fun getRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://api.themoviedb.org/3/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
-    private fun getMovies(){
+    private fun getMovies() {
         CoroutineScope(Dispatchers.IO).launch {
-            val call = getRetrofit().create(APIService::class.java).getMovies("trending/movie/week?api_key=95644482b1c66a2342c85021908cc3dd")
+            val call = getRetrofit().create(APIService::class.java)
+                .getMovies("movie/popular?api_key=95644482b1c66a2342c85021908cc3dd&language=en-US&page=1")
             val moviesRes = call.body()
             runOnUiThread {
                 if (call.isSuccessful) {
                     //show recyclerview
                     allMovies?.clear()
                     allMovies?.addAll(moviesRes!!.results)
+                    allMovies.forEach {
+                        //println(it.title)
+
+                        println(it.title)
+                        val movie = MoviesEntity(
+                            id = it.id,
+                            overview = it.overview,
+                            release_date = it.release_date,
+                            title = it.title,
+                            adult = it.adult,
+                            backdrop_path = it.backdrop_path,
+                            vote_count = it.vote_count,
+                            original_language = it.original_language,
+                            original_title = it.original_title,
+                            poster_path = it.poster_path,
+                            video = it.video,
+                            vote_average = it.vote_average,
+                            popularity = it.popularity,
+                            media_type = "movie"
+                        )
+                        Thread {
+                            MovieAplication.database.moviesDao().addMovies(movie)
+                        }.start()
+
+
+                    }
                     Log.i("response", allMovies[0].toString())
                     mAdapter.notifyDataSetChanged()
                     Toast.makeText(this@MainActivity, "Funciono", Toast.LENGTH_SHORT).show()
@@ -75,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 //    }
 
 
-    private fun initRecyclerView(){
+    private fun initRecyclerView() {
         mAdapter = MoviesAdapter(allMovies)
         mBinding.rvMovies.layoutManager = LinearLayoutManager(this)
         mBinding.rvMovies.adapter = mAdapter
@@ -106,4 +136,6 @@ class MainActivity : AppCompatActivity() {
 //        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
 //        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
 //    }
+
+
 }
