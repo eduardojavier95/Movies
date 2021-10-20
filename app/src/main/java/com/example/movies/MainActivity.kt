@@ -7,10 +7,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.movies.databinding.ActivityMainBinding
-import com.example.movies.features.movies.data.models.data.ApiMovieResponse
 import com.example.movies.features.movies.data.models.data.MoviesResponse
 import com.example.movies.features.movies.data.services.APIService
 import com.example.movies.features.movies.view.adapters.MoviesAdapter
@@ -22,7 +19,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener,
+    androidx.appcompat.widget.SearchView.OnQueryTextListener {
 
     private lateinit var mBinding: ActivityMainBinding
     private lateinit var allMovies: MutableList<MoviesResponse>
@@ -35,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-//        getMovies()
         initRecyclerView()
     }
 
@@ -69,6 +66,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun searchMovie(query: String?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val call = getRetrofit().create(APIService::class.java)
+                .getMovies("search/movie?api_key=95644482b1c66a2342c85021908cc3dd&language=en-US&query=$query&page=1&include_adult=false")
+            val moviesRes = call.body()
+            runOnUiThread {
+                if (call.isSuccessful) {
+                    //show recyclerview
+                    allMovies?.clear()
+                    allMovies?.addAll(moviesRes!!.results)
+                    Log.i("response", allMovies[0].toString())
+                    mAdapter.notifyDataSetChanged()
+                    Toast.makeText(this@MainActivity, "Funciono", Toast.LENGTH_SHORT).show()
+                } else {
+                    //show error
+//                    showError()
+                    Toast.makeText(this@MainActivity, "No Funciono", Toast.LENGTH_SHORT).show()
+                }
+                hideKeyboard()
+            }
+        }
+    }
+
 
     private fun initRecyclerView() {
         allMovies = ArrayList()
@@ -83,16 +103,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onQueryTextChange(newText: String?): Boolean {
-//        return true
-//    }
+    override fun onQueryTextChange(newText: String?): Boolean {
+        return true
+    }
 
-//    override fun onQueryTextSubmit(query: String?): Boolean {
-//        if(!query.isNullOrEmpty()){
-//            searchByName()
-//        }
-//        return true
-//    }
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        if(!query.isNullOrEmpty()){
+            searchMovie(query)
+        }
+        return true
+    }
 
     private fun hideKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager

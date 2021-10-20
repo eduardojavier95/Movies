@@ -34,7 +34,9 @@ class MoviesAdapter(private val movies: MutableList<MoviesResponse>) :
         fun bind(movie: MoviesResponse) {
             name.text = movie.title
             date.text = movie.release_date
-            Picasso.get().load(movie.poster_path).into(binding.ivMovie)
+            Picasso.get()
+                .load("https://image.tmdb.org/t/p/original"+movie.poster_path)
+                .into(binding.ivMovie)
         }
     }
 }
